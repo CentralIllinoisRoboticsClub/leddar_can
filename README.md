@@ -14,4 +14,4 @@ sudo ip link set can0 up type can bitrate 500000
 cansend can0 00000740#02
 sudo ip link set can0 down
 rosrun leddar_can leddar_can.py
-rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 /baslink /laser 10
+rosrun tf static_transform_publisher 0.0 0.0 0.0 0.0 0.0 0.0 /baselink /laser 10
