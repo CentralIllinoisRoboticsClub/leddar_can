@@ -83,6 +83,8 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
         scan.header.stamp = frame.header.stamp;
         scan.ranges.clear();
         scan.ranges.resize(16,0);
+        scan.intensities.clear();
+        scan.intensities.resize(16,0);
         det_count = 0;
     }
     else if(id == 0x00000750 && num_detections > 0)
@@ -95,10 +97,15 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
             ++det_count;
             if(det_count <= num_detections)
             {
-                //4th or 8th byte shifted 4 bits
+                //byte 3 or 7 shifted 4 bits
                 uint8_t laser_num = frame.data[3+k*4] >> 4;
+                
                 //Dist bytes 1,0 or 5,4
                 scan.ranges[laser_num] = (float)(frame.data[1+k*4]<<8 | frame.data[0+k*4])/100.0; // cm to meters
+                
+                //Intensity is ampH, byte 2 or 6 (12 bits)
+                uint8_t ampH = frame.data[3+k*4] & 0x0F; //keep just the right 4 bits
+                scan.intensities[laser_num] = (float)(ampH<<8 | frame.data[2+k*4])/4.0;
             }
         }
         if(det_count == num_detections)
