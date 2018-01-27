@@ -46,6 +46,7 @@ class LeddarCAN
         //parameters
         bool max_stream_; //Default false, set to true to tell leddar to stream data continuously
         int rate_; //Default 5 Hz, how often we send a request for a single leddar scan
+        double min_amp_slope_, min_amp_offset_;
 };
 
 #endif

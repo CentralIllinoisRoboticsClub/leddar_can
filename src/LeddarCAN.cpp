@@ -27,6 +27,8 @@ LeddarCAN::LeddarCAN()
     
     nh_.param("max_stream_flag", max_stream_, false); //set in leddar.launch
     nh_.param("rate_hz", rate_, 5); //set in leddar.launch
+    nh_.param("min_amp_slope", min_amp_slope_, 1.5); //set in leddar.launch
+    nh_.param("min_amp_offset", min_amp_offset_, 15.0); //set in leddar.launch
     
     num_detections = 0; //number of detections given in 0x751
     det_count = 0; //counter to check we have the expected scan data
@@ -91,7 +93,6 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
     {
         // Two laser data sets per CAN msg
         // (DIST_BYTE_L, DIST_BYTE_H, Amp_Byte_L, LaserNum4BITS-Amp4BITS) x 2
-        // Ignoring the Amplitude data for now
         for(int k=0; k<2; ++k)
         {
             ++det_count;
@@ -101,11 +102,23 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
                 uint8_t laser_num = frame.data[3+k*4] >> 4;
                 
                 //Dist bytes 1,0 or 5,4
-                scan.ranges[laser_num] = (float)(frame.data[1+k*4]<<8 | frame.data[0+k*4])/100.0; // cm to meters
-                
-                //Intensity is ampH, byte 2 or 6 (12 bits)
+                float range_meters = (float)(frame.data[1+k*4]<<8 | frame.data[0+k*4])/100.0; // cm to meters
+                //Intensity is ampH(byte 3 or 7 right 4 bits), byte 2 or 6 (12 bits)
                 uint8_t ampH = frame.data[3+k*4] & 0x0F; //keep just the right 4 bits
-                scan.intensities[laser_num] = (float)(ampH<<8 | frame.data[2+k*4])/4.0;
+                float amplitude = (float)(ampH<<8 | frame.data[2+k*4])/4.0;
+                
+                float min_amplitude = (float)min_amp_offset_ - (float)min_amp_slope_*range_meters;
+                /*if(min_amplitude < 0)
+                {
+                    min_amplitude = 0; //not needed because amplitude >= 0
+                }*/
+                
+                if(amplitude > min_amplitude)
+                {
+                    scan.ranges[laser_num] = range_meters;
+                    scan.intensities[laser_num] = amplitude;
+                }             
+
             }
         }
         if(det_count == num_detections)
