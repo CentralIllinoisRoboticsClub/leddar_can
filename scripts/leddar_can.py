@@ -30,7 +30,7 @@ class LeddarCAN():
         self.scan.range_min = 0.1
         self.scan.range_max = 50.0
         self.scan.ranges = [0] * 16 #
-        self.scan.intensities = [1] * 16 #Not used yet, for amplitude data
+        #self.scan.intensities = [1] * 16 #Not used yet, for amplitude data
         
     def get_leddar_scan(self):
         msg = self.bus.recv(0.0)
@@ -63,7 +63,7 @@ class LeddarCAN():
                     det_count = det_count + 1
                     if(det_count <= nDetections):
                         info = msg.data[0+4*k:4+8*k] #0:4, 4:8 means 0 thru 3, 4 thru 7
-                        laser_num = int(binascii.hexlify(info[3:4]),16)/16 #divide by 16 to shift right 4 bits
+                        laser_num = int(binascii.hexlify(info[3:4]),16)/16 # shift right 4 bits
                         dist_byte1 = int(binascii.hexlify(info[1:2]),16)
                         dist_byte2 = int(binascii.hexlify(info[0:1]),16)
                         dist_cm = dist_byte1*256 + dist_byte2 # Need a better way for little endian in python

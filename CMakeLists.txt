@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  can_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -101,7 +102,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+ INCLUDE_DIRS include
 #  LIBRARIES leddar_can
 #  CATKIN_DEPENDS roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
@@ -114,6 +115,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
+include_directories(include include/leddar_can_lib)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
@@ -129,16 +131,16 @@ include_directories(
 # add_dependencies(leddar_can ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-# add_executable(leddar_can_node src/leddar_can_node.cpp)
+add_executable(leddar_stream src/LeddarCAN.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-# add_dependencies(leddar_can_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(leddar_stream leddar_can_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(leddar_can_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(leddar_stream
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
