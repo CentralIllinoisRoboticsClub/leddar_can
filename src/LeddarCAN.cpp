@@ -25,10 +25,12 @@ LeddarCAN::LeddarCAN()
     // leddarCallback will run every time ros sees the topic /received_messages
     can_sub_ = nh_.subscribe("received_messages", 50, &LeddarCAN::leddarCallback, this); //receive CAN
     
-    nh_.param("max_stream_flag", max_stream_, false); //set in leddar.launch
-    nh_.param("rate_hz", rate_, 5); //set in leddar.launch
-    nh_.param("min_amp_slope", min_amp_slope_, 1.5); //set in leddar.launch
-    nh_.param("min_amp_offset", min_amp_offset_, 15.0); //set in leddar.launch
+    nh_p  = ros::NodeHandle("~");
+    nh_p.param("max_stream_flag", max_stream_, false); //set in leddar.launch
+    nh_p.param("rate_hz", rate_, 5); //set in leddar.launch
+    nh_p.param("min_amp_slope", min_amp_slope_, 1.5); //set in leddar.launch
+    nh_p.param("min_amp_offset", min_amp_offset_, 15.0); //set in leddar.launch
+    ROS_INFO("rate_hz = %d, min_amp_offset = %f", rate_, min_amp_offset_);
     
     num_detections = 0; //number of detections given in 0x751
     det_count = 0; //counter to check we have the expected scan data
@@ -84,7 +86,7 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
         num_detections = frame.data[0];
         scan.header.stamp = frame.header.stamp;
         scan.ranges.clear();
-        scan.ranges.resize(16,0);
+        scan.ranges.resize(16,49.5);
         scan.intensities.clear();
         scan.intensities.resize(16,0);
         det_count = 0;
@@ -113,7 +115,7 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
                     min_amplitude = 0; //not needed because amplitude >= 0
                 }*/
                 
-                if(amplitude > min_amplitude)
+                if(amplitude > min_amplitude && range_meters <= scan.ranges[laser_num])
                 {
                     scan.ranges[laser_num] = range_meters;
                     scan.intensities[laser_num] = amplitude;

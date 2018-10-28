@@ -32,7 +32,8 @@ class LeddarCAN
         void stopStream();
 
 
-        ros::NodeHandle nh_; 
+        ros::NodeHandle nh_;
+        ros::NodeHandle nh_p;
         ros::Publisher request_pub_;
         ros::Publisher scan_pub_;
         ros::Subscriber can_sub_;
