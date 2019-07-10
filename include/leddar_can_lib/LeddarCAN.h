@@ -35,13 +35,13 @@ class LeddarCAN
         ros::NodeHandle nh_;
         ros::NodeHandle nh_p;
         ros::Publisher request_pub_;
-        ros::Publisher scan_pub_;
+        ros::Publisher scan_pub_, scan2_pub_;
         ros::Subscriber can_sub_;
         
         uint8_t num_detections; //number of detections given in 0x751
         uint8_t det_count; //counter to check we have the expected scan data
         
-        sensor_msgs::LaserScan scan;
+        sensor_msgs::LaserScan scan, scan2;
         can_msgs::Frame can_request;
         
         //parameters

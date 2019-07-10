@@ -20,6 +20,7 @@ LeddarCAN::LeddarCAN()
     //Topics you want to publish
     request_pub_ = nh_.advertise<can_msgs::Frame>("sent_messages", 50); //send CAN
     scan_pub_ = nh_.advertise<sensor_msgs::LaserScan>("scan", 10); //send laser scan
+    scan2_pub_ = nh_.advertise<sensor_msgs::LaserScan>("scan2", 10); //send laser scan2, lower intensity readings
 
     //Topic you want to subscribe
     // leddarCallback will run every time ros sees the topic /received_messages
@@ -46,6 +47,7 @@ LeddarCAN::LeddarCAN()
     scan.angle_increment = 0.0523; //3.0*3.14/180.0
     scan.range_min = 0.1;
     scan.range_max = 50.0;
+    scan2 = scan;
     
     stopStream(); //Make sure leddar is not continuously streaming initially
 }
@@ -82,6 +84,7 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
         if(det_count > 0)
         {
             scan_pub_.publish(scan);
+            scan2_pub_.publish(scan2);
         }
         num_detections = frame.data[0];
         scan.header.stamp = frame.header.stamp;
@@ -89,6 +92,7 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
         scan.ranges.resize(16,49.5);
         scan.intensities.clear();
         scan.intensities.resize(16,0);
+        scan2 = scan;
         det_count = 0;
     }
     else if(id == 0x00000750 && num_detections > 0)
@@ -119,13 +123,19 @@ void LeddarCAN::leddarCallback(const can_msgs::Frame& frame)
                 {
                     scan.ranges[laser_num] = range_meters;
                     scan.intensities[laser_num] = amplitude;
-                }             
+                }
+                else
+                {
+                    scan2.ranges[laser_num] = range_meters;
+                    scan2.intensities[laser_num] = amplitude;
+                }
 
             }
         }
         if(det_count == num_detections)
         {
             scan_pub_.publish(scan);
+            scan2_pub_.publish(scan2);
             det_count = 0;
         }
     }
