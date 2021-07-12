@@ -2,13 +2,13 @@
 #define LeddarCAN_H
 
 //ROS Includes
-#include <ros/ros.h>
-#include <can_msgs/Frame.h>
-#include <sensor_msgs/LaserScan.h>
+#include <rclcpp/rclcpp.hpp>
+#include <can_msgs/msg/frame.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 //#include <std_msgs/String.h>
 
 
-class LeddarCAN
+class LeddarCAN: public rclcpp::Node
 {
     public:
         LeddarCAN();
@@ -22,7 +22,7 @@ class LeddarCAN
         void requestSingleScan();
         
     private:
-        void leddarCallback(const can_msgs::Frame& frame);
+        void leddarCallback(const can_msgs::msg::Frame::SharedPtr frame);
         //void leddarCallback(const can_msgs::Frame::ConstPtr& frame);
         
         // sends 740#02
@@ -31,18 +31,18 @@ class LeddarCAN
         // sends 740#03
         void stopStream();
 
+        rclcpp::TimerBase::SharedPtr m_timer;
 
-        ros::NodeHandle nh_;
-        ros::NodeHandle nh_p;
-        ros::Publisher request_pub_;
-        ros::Publisher scan_pub_, scan2_pub_;
-        ros::Subscriber can_sub_;
+        std::shared_ptr<rclcpp::Subscription<can_msgs::msg::Frame> > can_sub_;
+        std::shared_ptr<rclcpp::Publisher<can_msgs::msg::Frame> > request_pub_;
+        std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan> > scan_pub_;
+        std::shared_ptr<rclcpp::Publisher<sensor_msgs::msg::LaserScan> > scan2_pub_;
         
         uint8_t num_detections; //number of detections given in 0x751
         uint8_t det_count; //counter to check we have the expected scan data
         
-        sensor_msgs::LaserScan scan, scan2;
-        can_msgs::Frame can_request;
+        sensor_msgs::msg::LaserScan scan, scan2;
+        can_msgs::msg::Frame can_request;
         
         //parameters
         bool max_stream_; //Default false, set to true to tell leddar to stream data continuously
